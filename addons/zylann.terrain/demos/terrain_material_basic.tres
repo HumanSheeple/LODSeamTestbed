@@ -1,0 +1,42 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=1]
+
+[sub_resource type="MaterialShader" id=1]
+
+_code = {
+"fragment": "//uniform texture _flat_tex;
+//uniform texture _slope_tex;
+
+vec4 flat_col = vec4(0.5,0.8,0.2,1.0);//tex(_flat_tex, UV);
+vec4 slope_col = vec4(0.5,0.4,0.3,1.0);//tex(_slope_tex, UV);
+
+vec3 src_normal = VAR1.xyz;// * mat3(INV_CAMERA_MATRIX);
+
+float transition_threshold = 0.8;
+float transition_interval = 0.01;
+float slope = clamp(src_normal.y, 0.0, 1.0);
+slope = smoothstep(transition_threshold - transition_interval, transition_threshold + transition_interval, slope);
+
+DIFFUSE = mix(slope_col, flat_col, slope).rgb * COLOR.rgb;
+",
+"fragment_ofs": 0,
+"light": "",
+"light_ofs": 0,
+"vertex": "VAR1.xyz = SRC_NORMAL;
+",
+"vertex_ofs": 0
+}
+
+[resource]
+
+flags/visible = true
+flags/double_sided = false
+flags/invert_faces = false
+flags/unshaded = false
+flags/on_top = false
+flags/lightmap_on_uv2 = true
+flags/colarray_is_srgb = false
+params/blend_mode = 0
+params/depth_draw = 1
+params/line_width = 0.0
+shader/shader = SubResource( 1 )
+
