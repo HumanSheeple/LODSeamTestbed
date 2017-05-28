@@ -298,27 +298,66 @@ func update_chunk_at(cx, cy):
 	var LOD = int(0)
 	var NE = 1
 	var EE = 1
+	var WE = 1
+	var SE = 1
 	if ((cy == 2)&&(cx==4))||((cy == 2)&&(cx==5))||((cy==2)&&(cx==6))||((cy==2)&&(cx==7))||((cy == 3)&&(cx==4))||((cy == 3)&&(cx==5))||((cy==3)&&(cx==6))||((cy==3)&&(cx==7))||((cy == 4)&&(cx==4))||((cy == 4)&&(cx==5))||((cy==4)&&(cx==6))||((cy==4)&&(cx==7))||((cy == 5)&&(cx==4))||((cy == 5)&&(cx==5))||((cy==5)&&(cx==6))||((cy==5)&&(cx==7)):
 		LOD = 2
 		NE = 0
 		EE = 0
+		WE = 0
+		SE = 0
 	elif ((cy == 2)&&(cx==2))||((cy == 2)&&(cx==3))||((cy==3)&&(cx==2))||((cy==3)&&(cx==3)):
 		LOD = 1
-		NE = 2
+		NE = 1
 		EE = 0
 	elif ((cy ==2)&&(cx==1)):
 		NE = 2
-		EE = 1
+	elif ((cy ==3)&&(cx==1)):
+		NE = 2
 	elif ((cy ==1)&&(cx==2)):
 		NE = 1
 		EE = 2
+	elif ((cy==1)&&(cx==3)):
+		EE = 2
+	elif ((cy==1)&&(cx==4)):
+		EE = 2
+	elif ((cy==1)&&(cx==5)):
+		EE = 2
+	elif ((cy==1)&&(cx==6)):
+		EE = 2
+	elif ((cy==1)&&(cx==7)):
+		EE = 2
+	elif ((cy==6)&&(cx==7)):
+		WE = 2
+	elif ((cy==2)&&(cx==8)):
+		SE = 2
+	elif ((cy==3)&&(cx==8)):
+		SE = 2
+	elif ((cy==4)&&(cx==8)):
+		SE = 2
+	elif ((cy==5)&&(cx==8)):
+		SE = 2
+	elif ((cy==4)&&(cx==3)):
+		NE = 2
+	elif ((cy==5)&&(cx==3)):
+		NE = 2
+	elif ((cy==6)&&(cx==4)):
+		WE = 2
+	elif ((cy==6)&&(cx==5)):
+		WE = 2
+	elif ((cy==6)&&(cx==6)):
+		WE = 2
+	elif ((cy==6)&&(cx==7)):
+		WE = 2
+	elif ((cy==0)&&(cx==0)):
+		SE = 2
 	else:
 		LOD = 0
 
-	update_chunk(chunk, LOD, NE, EE)
+	update_chunk(chunk, LOD, NE, EE, WE, SE)
 
 # This function is the most time-consuming one in this tool.
-func update_chunk(chunk, LOD, NE, EE):
+func update_chunk(chunk, LOD, NE, EE, WE, SE):
 	if LOD==2:
 		chunk=_chunks[2][4]
 	
@@ -374,7 +413,9 @@ func update_chunk(chunk, LOD, NE, EE):
 		"lod": LOD,
 		"smooth_shading": smooth_shading,
 		"north_edge": NE,
-		"east_edge": EE
+		"east_edge": EE,
+		"west_edge": WE,
+		"south_edge": SE
 	}
 	
 	#var mesh = Mesher.make_heightmap(_data, _normals, _colors, x0, y0, w, h, smooth_shading, quad_adaptation)
