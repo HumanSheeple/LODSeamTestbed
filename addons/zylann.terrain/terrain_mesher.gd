@@ -25,7 +25,7 @@ static func make_heightmap(opt):
 	var y0 = opt.y0
 	var w = opt.w
 	var h = opt.h
-	var LOD = opt.lod
+	var LOD = opt.lod_index
 	var smooth_shading = tryget(opt, "smooth_shading", true)
 	var north_edge = opt.north_edge
 	var east_edge = opt.east_edge
@@ -194,7 +194,7 @@ static func make_heightmap(opt):
 				if (half_index_east==false):
 					indices.push_back(i)
 					indices.push_back(i+w-indexoffset)
-					indices.push_back(i+w-factor-indexoffset)
+					indices.push_back(i+w-1-indexoffset)
 					indices.push_back(i)
 					indices.push_back(i+1)
 					indices.push_back(i+w-indexoffset)
@@ -202,11 +202,11 @@ static func make_heightmap(opt):
 				elif(half_index_east==true):
 					indices.push_back(i)
 					indices.push_back(i+1)
-					indices.push_back(i+w-factor-indexoffset)
+					indices.push_back(i+w-1-indexoffset)
 					half_index_east=false
 					indexoffset+=1
 				i += 1
-			
+		
 
 	northeastcorner = i + east_vertex_count - 1
 	northwestcorner = i + east_vertex_count
