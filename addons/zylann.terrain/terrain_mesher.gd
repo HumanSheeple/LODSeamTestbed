@@ -25,6 +25,8 @@ static func make_heightmap(opt):
 	var y0 = opt.y0
 	var w = opt.w
 	var h = opt.h
+	var h0 = h-2
+	var h1 = h-1
 	var LOD = opt.lod_index
 	var smooth_shading = tryget(opt, "smooth_shading", true)
 	var north_edge = opt.north_edge
@@ -39,6 +41,8 @@ static func make_heightmap(opt):
 		
 	var max_y = int(y0 + (w*factor))
 	var max_x = int(x0 + (h*factor))
+	var max_y0 = max_y+1
+	var max_x0 = max_x+1
 	
 	var terrain_size_x = input_heights.size()-1
 	var terrain_size_y = 0
@@ -75,23 +79,22 @@ static func make_heightmap(opt):
 		return null
 	
 	var vertex_count = vertices.size()
-	var quad_count = (w-1)*(h-1)
+	var quad_count = (h1)*(h1)
 
 	var i = 0
 	var half_index_east = false
 	var half_index_north = false
-	for y in range(1, h-1):
-		for x in range(1, w-1):
+	for y in range(1, h1):
+		for x in range(1, h1):
 			indices.push_back(i)
 			indices.push_back(i+w)
-			indices.push_back(i+w-1)
+			indices.push_back(i+h1)
 			indices.push_back(i)
 			indices.push_back(i+1)
 			indices.push_back(i+w)
 			i += 1
 		i += 1
 	
-	var indexref = i
 	var east_vertex_count = 0
 	var north_vertex_count = 0
 	var west_vertex_count = 0
@@ -103,18 +106,18 @@ static func make_heightmap(opt):
 	var rowcounter = 0
 	
 	if(east_edge==0):
-		for y in range(max_y, max_y+1, factor):
+		for y in range(max_y, max_y0, factor):
 			var hrow = input_heights[y]
 			var crow = input_colors[y]
 			var nrow = input_normals[y]
-			for x in range(x0, max_x+1, (factor>>int(1))):
+			for x in range(x0, max_x0, (factor>>int(1))):
 				vertices.push_back(Vector3(x-x0, hrow[x], y-y0))
 				uv.push_back(Vector2(x, y) * uv_scale)
 				colors.push_back(crow[x])
 				normals.push_back(nrow[x])
 				east_vertex_count+=1
 		indexoffset = 0
-		southeastcorner = i+w-1
+		southeastcorner = i+h1
 		for y in range(0, 1):
 			indices.push_back(i)
 			indices.push_back(i+w+indexoffset)
@@ -147,22 +150,22 @@ static func make_heightmap(opt):
 	
 	
 	if(east_edge==1):
-		for y in range(max_y, max_y+1, factor):
+		for y in range(max_y, max_y0, factor):
 			var hrow = input_heights[y]
 			var crow = input_colors[y]
 			var nrow = input_normals[y]
-			for x in range(x0, max_x+1, factor):
+			for x in range(x0, max_x0, factor):
 				vertices.push_back(Vector3(x-x0, hrow[x], y-y0))
 				uv.push_back(Vector2(x, y) * uv_scale)
 				colors.push_back(crow[x])
 				normals.push_back(nrow[x])
 				east_vertex_count+=1
-		southeastcorner = i+w-1
+		southeastcorner = i+h1
 		indices.push_back(i)
 		indices.push_back(i+w)
 		indices.push_back(southeastcorner)
 		for y in range(0, 1):
-			for x in range(1, w-1):
+			for x in range(1, h1):
 				indices.push_back(i)
 				indices.push_back(i+w+1)
 				indices.push_back(i+w)
@@ -176,11 +179,11 @@ static func make_heightmap(opt):
 			i += 1
 
 	if(east_edge==2):
-		for y in range(max_y, max_y+1, factor):
+		for y in range(max_y, max_y0, factor):
 			var hrow = input_heights[y]
 			var crow = input_colors[y]
 			var nrow = input_normals[y]
-			for x in range(x0, max_x+1, factor<<int(1)):
+			for x in range(x0, max_x0, factor<<int(1)):
 				vertices.push_back(Vector3(x-x0, hrow[x], y-y0))
 				uv.push_back(Vector2(x, y) * uv_scale)
 				colors.push_back(crow[x])
@@ -188,13 +191,13 @@ static func make_heightmap(opt):
 				east_vertex_count+=1
 		half_index_east = false
 		indexoffset = 0
-		southeastcorner = i+w-1
+		southeastcorner = i+h1
 		for y in range(0, 1):
-			for x in range(0, w-1):
+			for x in range(0, h1):
 				if (half_index_east==false):
 					indices.push_back(i)
 					indices.push_back(i+w-indexoffset)
-					indices.push_back(i+w-1-indexoffset)
+					indices.push_back(i+h1-indexoffset)
 					indices.push_back(i)
 					indices.push_back(i+1)
 					indices.push_back(i+w-indexoffset)
@@ -202,7 +205,7 @@ static func make_heightmap(opt):
 				elif(half_index_east==true):
 					indices.push_back(i)
 					indices.push_back(i+1)
-					indices.push_back(i+w-1-indexoffset)
+					indices.push_back(i+h1-indexoffset)
 					half_index_east=false
 					indexoffset+=1
 				i += 1
@@ -223,33 +226,32 @@ static func make_heightmap(opt):
 		var rowcounter = 1
 		
 		i = i + east_vertex_count +1
-		var north_start = (h-2)
 		indices.push_back(i)
-		indices.push_back((north_start*rowcounter)+(rowcounter-1))
+		indices.push_back((h0*rowcounter)+(rowcounter-1))
 		indices.push_back(i-1)
 		i+=1
 		indices.push_back(i)
-		indices.push_back((north_start*rowcounter)+(rowcounter-1))
+		indices.push_back((h0*rowcounter)+(rowcounter-1))
 		indices.push_back(i-1)
 		i+=1
-		for y in range(0, (w-2)):
+		for y in range(0, h0):
 			indices.push_back(i)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1))
+			indices.push_back((h0*rowcounter)+(rowcounter-1))
 			indices.push_back(i-1)
 			i+=1
 			indices.push_back(i)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1))
+			indices.push_back((h0*rowcounter)+(rowcounter-1))
 			indices.push_back(i-1)
 			indices.push_back(i)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1)+h-1)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1))
+			indices.push_back((h0*rowcounter)+(rowcounter-1)+h1)
+			indices.push_back((h0*rowcounter)+(rowcounter-1))
 			rowcounter+=1
 			i += 1
 		indices.push_back(i)
-		indices.push_back((north_start*rowcounter)+(rowcounter-1))
+		indices.push_back((h0*rowcounter)+(rowcounter-1))
 		indices.push_back(i-1)
 		indices.push_back(northeastcorner)
-		indices.push_back((north_start*rowcounter)+(rowcounter-1))
+		indices.push_back((h0*rowcounter)+(rowcounter-1))
 		indices.push_back(i)
 
 
@@ -268,31 +270,30 @@ static func make_heightmap(opt):
 		var rowcounter = 1
 		
 		i = i + east_vertex_count +1
-		var north_start = (h-2)
 		
 		indices.push_back(i)
-		indices.push_back((north_start*rowcounter)+(rowcounter-1))
+		indices.push_back((h0*rowcounter)+(rowcounter-1))
 		indices.push_back(i-1)
 		i+=1
-		for y in range(0, w-2):
+		for y in range(0, h0):
 			indices.push_back(i)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1))
+			indices.push_back((h0*rowcounter)+(rowcounter-1))
 			indices.push_back(i-1)
 			indices.push_back(i)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1)+north_start+1)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1))
+			indices.push_back((h0*rowcounter)+(rowcounter-1)+h1)
+			indices.push_back((h0*rowcounter)+(rowcounter-1))
 			rowcounter+=1
 			i += 1
 		indices.push_back(i-1)
 		indices.push_back(northeastcorner)
-		indices.push_back((north_start*rowcounter)+(rowcounter-1))
+		indices.push_back((h0*rowcounter)+(rowcounter-1))
 
 
 
 
 
 	if (north_edge==2):
-		for y in range(y0, max_y+1, factor<<int(1)):
+		for y in range(y0, max_y0, factor<<int(1)):
 			var hrow = input_heights[y]
 			var crow = input_colors[y]
 			var nrow = input_normals[y]
@@ -306,28 +307,27 @@ static func make_heightmap(opt):
 		var rowcounter = 1
 		
 		i = i + east_vertex_count +1
-		var north_start = (h-2)
 		for y in range(0, ((h>>int(1))-1)):
 			
 			indices.push_back(i)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1))
+			indices.push_back((h0*rowcounter)+(rowcounter-1))
 			indices.push_back(i-1)
 			indices.push_back(i)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1)+h-1)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1))
+			indices.push_back((h0*rowcounter)+(rowcounter-1)+h1)
+			indices.push_back((h0*rowcounter)+(rowcounter-1))
 			rowcounter+=1
 			indices.push_back(i)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1)+h-1)
-			indices.push_back((north_start*rowcounter)+(rowcounter-1))
+			indices.push_back((h0*rowcounter)+(rowcounter-1)+h1)
+			indices.push_back((h0*rowcounter)+(rowcounter-1))
 			rowcounter+=1
 			indexoffset+=1
 			i += 1
 		indices.push_back(i)
-		indices.push_back((north_start*rowcounter)+(rowcounter-1))
+		indices.push_back((h0*rowcounter)+(rowcounter-1))
 		indices.push_back(i-1)
 		indices.push_back(i)
 		indices.push_back(northeastcorner)
-		indices.push_back((north_start*rowcounter)+(rowcounter-1))
+		indices.push_back((h0*rowcounter)+(rowcounter-1))
 
 	i = northeastcorner + north_vertex_count + 2
 	southwestcorner = i-1
@@ -345,7 +345,7 @@ static func make_heightmap(opt):
 				west_vertex_count+=1
 		
 		indexoffset = 0
-		for x in range(0, h-2):
+		for x in range(0, h0):
 			indices.push_back(i)
 			indices.push_back(indexoffset)
 			indices.push_back(i-1)
@@ -382,7 +382,7 @@ static func make_heightmap(opt):
 				west_vertex_count+=1
 		
 		indexoffset=0
-		for x in range(0, h-2):
+		for x in range(0, h0):
 			indices.push_back(i)
 			indices.push_back(indexoffset+1)
 			indices.push_back(indexoffset)
@@ -453,43 +453,42 @@ static func make_heightmap(opt):
 				normals.push_back(nrow[x])
 		
 		rowcounter = 0
-		var south_start = (h-1)
 		indices.push_back(i)
 		indices.push_back(southwestcorner)
 		indices.push_back(rowcounter)
 		i+=1
 		indices.push_back(i)
 		indices.push_back(i-1)
-		indices.push_back(rowcounter*south_start)
+		indices.push_back(rowcounter*h1)
 		rowcounter+=1
 
 		for y in range(0, w-3):
 			indices.push_back(i)
-			indices.push_back((rowcounter-1)*south_start)
-			indices.push_back(rowcounter*south_start)
+			indices.push_back((rowcounter-1)*h1)
+			indices.push_back(rowcounter*h1)
 			i+=1
 			indices.push_back(i)
 			indices.push_back(i-1)
-			indices.push_back(rowcounter*south_start)
+			indices.push_back(rowcounter*h1)
 			i+=1
 			indices.push_back(i)
 			indices.push_back(i-1)
-			indices.push_back(rowcounter*south_start)
+			indices.push_back(rowcounter*h1)
 			rowcounter+=1
 		indices.push_back(i)
-		indices.push_back((rowcounter-1)*south_start)
-		indices.push_back(rowcounter*south_start)
+		indices.push_back((rowcounter-1)*h1)
+		indices.push_back(rowcounter*h1)
 		i+=1
 		for a in range (0,2):
 			indices.push_back(i)
 			indices.push_back(i-1)
-			indices.push_back(rowcounter*south_start)
+			indices.push_back(rowcounter*h1)
 			i+=1
 		indices.push_back(i)
 		indices.push_back(i-1)
-		indices.push_back(rowcounter*south_start)
+		indices.push_back(rowcounter*h1)
 		indices.push_back(i)
-		indices.push_back((rowcounter)*south_start)
+		indices.push_back((rowcounter)*h1)
 		indices.push_back(southeastcorner)
 	
 	if (south_edge==1):
@@ -504,30 +503,29 @@ static func make_heightmap(opt):
 				normals.push_back(nrow[x])
 		
 		rowcounter = 0
-		var south_start = (h-1)
 		indices.push_back(i)
 		indices.push_back(southwestcorner)
 		indices.push_back(rowcounter)
 		rowcounter+=1
 		indices.push_back(i)
-		indices.push_back((rowcounter-1)*south_start)
-		indices.push_back(rowcounter*south_start)
+		indices.push_back((rowcounter-1)*h1)
+		indices.push_back(rowcounter*h1)
 		i+=1
 
 		for y in range(0, w-3):
 			indices.push_back(i)
 			indices.push_back(i-1)
-			indices.push_back((rowcounter)*south_start)
+			indices.push_back((rowcounter)*h1)
 			i+=1
 			rowcounter+=1
 			indices.push_back(i-1)
-			indices.push_back((rowcounter-1)*south_start)
-			indices.push_back((rowcounter)*south_start)
+			indices.push_back((rowcounter-1)*h1)
+			indices.push_back((rowcounter)*h1)
 		indices.push_back(i)
 		indices.push_back(i-1)
-		indices.push_back((rowcounter)*south_start)
+		indices.push_back((rowcounter)*h1)
 		indices.push_back(i)
-		indices.push_back((rowcounter)*south_start)
+		indices.push_back((rowcounter)*h1)
 		indices.push_back(southeastcorner)
 	
 	if (south_edge==2):
@@ -542,34 +540,33 @@ static func make_heightmap(opt):
 				normals.push_back(nrow[x])
 		
 		rowcounter = 0
-		var south_start = (h-1)
 		indices.push_back(i)
 		indices.push_back(southwestcorner)
 		indices.push_back(rowcounter)
 		rowcounter+=1
 		indices.push_back(i)
-		indices.push_back((rowcounter-1)*south_start)
-		indices.push_back(rowcounter*south_start)
+		indices.push_back((rowcounter-1)*h1)
+		indices.push_back(rowcounter*h1)
 		rowcounter+=1
 
 		for y in range(0, w-10):
 			indices.push_back(i)
-			indices.push_back((rowcounter-1)*south_start)
-			indices.push_back(rowcounter*south_start)
+			indices.push_back((rowcounter-1)*h1)
+			indices.push_back(rowcounter*h1)
 			i+=1
 			indices.push_back(i)
 			indices.push_back(i-1)
-			indices.push_back(rowcounter*south_start)
+			indices.push_back(rowcounter*h1)
 			rowcounter+=1
 			indices.push_back(i)
-			indices.push_back((rowcounter-1)*south_start)
-			indices.push_back((rowcounter)*south_start)
+			indices.push_back((rowcounter-1)*h1)
+			indices.push_back((rowcounter)*h1)
 			rowcounter+=1
 		indices.push_back(i)
-		indices.push_back((rowcounter-1)*south_start)
-		indices.push_back((rowcounter)*south_start)
+		indices.push_back((rowcounter-1)*h1)
+		indices.push_back((rowcounter)*h1)
 		indices.push_back(i)
-		indices.push_back((rowcounter)*south_start)
+		indices.push_back((rowcounter)*h1)
 		indices.push_back(southeastcorner)
 	
 	var arrays = []

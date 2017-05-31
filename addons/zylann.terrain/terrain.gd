@@ -39,6 +39,7 @@ var _dirty_lod_chunks = []
 var _undo_chunks = {}
 
 var _lodder = null
+var refresh_counter = 0
 
 
 func _get_property_list():
@@ -290,6 +291,12 @@ func _process(delta):
 				if chunk != null:
 					update_chunk(chunk, lod_index)
 	_dirty_lod_chunks.clear()
+	
+	if refresh_counter<40:
+		refresh_counter+=1
+	else:
+		_force_update_all_chunks()
+		refresh_counter=0
 
 
 func update_lods(fallback_viewer=null):
@@ -306,7 +313,7 @@ func update_lods(fallback_viewer=null):
 
 
 func _force_update_all_chunks():
-	_lodder.for_all_chunks(funcref("_force_update_chunk_cb"))
+	_lodder.for_all_chunks(funcref(self, "_force_update_chunk_cb"))
 
 func _force_update_chunk_cb(chunk, lod_index):
 	update_chunk(chunk, lod_index)
@@ -342,13 +349,37 @@ func update_chunk(chunk, lod_index=0):
 	var y0 = chunk.pos.y * CHUNK_SIZE
 	var w = CHUNK_SIZE
 	var h = CHUNK_SIZE
-	var iamlazy = 1
-	if (lod_index>0):
-		iamlazy = 0
-	var NE = iamlazy
-	var EE = iamlazy
-	var WE = iamlazy
-	var SE = iamlazy
+	var NE = 1
+	var EE = 1
+	var WE = 1
+	var SE = 1
+	var greater_lod = lod_index+1
+	var LODX = chunk.pos.x/(2<<int(lod_index))
+	var LODY = chunk.pos.y/(2<<int(lod_index))
+	if int(round((chunk.pos.x/(1<<int(lod_index)))))%2==1:
+		if int(round(((chunk.pos.y/(1<<int(lod_index))))))%2==1:
+			if (_lodder.get_chunk_at(LODX+0.5, LODY-0.5, greater_lod) != null):
+				NE = 2
+				print("yes")
+			if (_lodder.get_chunk_at(LODX-0.5, LODY+0.5, greater_lod) != null):
+				EE = 2
+		else:
+			if (_lodder.get_chunk_at(LODX+0.5, LODY, greater_lod) != null):
+				NE = 2
+			if (_lodder.get_chunk_at(LODX-0.5, LODY-1, greater_lod) != null):
+				WE = 2
+	else:
+		if int(round((chunk.pos.y/(1<<int(lod_index)))))%2==1:
+			if (_lodder.get_chunk_at(LODX-1, LODY-0.5, greater_lod) != null):
+				SE = 2
+				print("yes")
+			if (_lodder.get_chunk_at(LODX, LODY+0.5, greater_lod) != null):
+				EE = 2
+		else:
+			if (_lodder.get_chunk_at(LODX-1, LODY, greater_lod) != null):
+				SE = 2
+			if (_lodder.get_chunk_at(LODX, LODY-1, greater_lod) != null):
+				WE = 2
 	
 	
 	
@@ -378,7 +409,7 @@ func update_chunk(chunk, lod_index=0):
 		else:
 			chunk.clear_collider()
 
-
+	
 # TODO Should be renamed get_terrain_height
 func get_terrain_value(x, y):
 	if x < 0 or y < 0 or x >= terrain_size or y >= terrain_size:

@@ -1,18 +1,22 @@
-Godot Terrain Plugin
+GTPESL (Godot Terrain Painter Editor with Seamless LODing) A joint venture by Zylann and HumanSheeple
 ======================
 
-This is a heightmap-based terrain node for Godot Engine 2.1, written in GDScript.
+This is a vertex height and shader editor for Godot with Level Of Detail capability.
 
-![Editor screenshot](http://zylannprods.fr/lab/godot/terrain_plugin/TerrainEditor_screen4.png)
+
+![Editor screenshot](http://funkyimg.com/i/2tLi5.png)
 
 Features
 ----------
 
 - Custom Terrain node
+- Auto-Updating Seamless Level Of Detail based on Quadtree engine mostly coded by Zylann, Mesher, Seamer and Neighbouring written by HumanSheeple
 - Resizeable square between 1 and 1024 units of space
 - Paint and smooth the terrain in the editor
 - Brush with customizable shape, size and opacity
 - Takes advantage of frustum culling by chunking the terrain in multiple meshes
+- Choose from 18 different seamless terrain types to paint and mix how you like onto the terrain all from a single material.
+- Triplanar rock shaders autogenerate when terrain steep enough
 - Collisions
 - Smooth or hard-edges rendering
 - Save to image and normal map
@@ -27,8 +31,7 @@ Features
 TODO/ideas
 -----------
 
-- Meshing is very slow (will this plugin remain pure GDScript?)
-- Level of detail (non-trivial! Requires faster meshing)
+- Meshing is very VERY slow (will this plugin remain pure GDScript?)
 - Baked mode for faster terrain loading (it is currently rebuilt from data both in editor and game)
 - Save terrain data as a separate resource to unbloat the scene file
 - Decorrelate resolution and size
